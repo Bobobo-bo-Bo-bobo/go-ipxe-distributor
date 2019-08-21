@@ -1,0 +1,53 @@
+---
+global:
+    host: "127.0.0.1"
+    port: 8080
+
+default:
+    # prepend to _all_ IPXE data
+    ipxe_prepend:
+        - |
+            # ! *-timeout is in ms !
+            set menu-timeout 60000
+            set submenu-timeout ${menu-timeout}
+            
+            # set default action to "exit" if not set
+            isset ${menu-default} || set menu-default exit_ipxe
+
+    # append to _all_ IPXE data
+    ipxe_append:
+        - "choose --timeout ${menu-timeout} --default ${menu-default} selected || goto abort"
+        - "set menu-timeout 0"
+
+    # default if there is no match
+    default_image:
+        - "# Boot the first local HDD"
+        - "sanboot --no-describe --drive 0x80"
+
+images:
+    centos_7.6:
+        action:
+            - "initrd http://mirror.centos.org/centos/7/os/x86_64/images/pxeboot/initrd.img"
+            - "chain http://mirror.centos.org/centos/7/os/x86_64/images/pxeboot/vmlinuz net.ifnames=0 biosdevname=0 ksdevice=eth2 inst.repo=http://mirror.centos.org/centos/7/os/x86_64/ inst.lang=en_GB inst.keymap=be-latin1 inst.vnc inst.vncpassword=CHANGEME ip=x.x.x.x netmask=x.x.x.x gateway=x.x.x.x dns=x.x.x.x"
+
+    redhat_7:
+        action:
+            - "initrd http://mirror.redhat.org/redhat/7/os/x86_64/images/pxeboot/initrd.img"
+            - "chain http://mirror.redhat.org/redhat/7/os/x86_64/images/pxeboot/vmlinuz net.ifnames=0 biosdevname=0 ksdevice=eth2 inst.repo=http://mirror.redhat.org/redhat/7/os/x86_64/ inst.lang=en_GB inst.keymap=be-latin1 inst.vnc inst.vncpassword=CHANGEME ip=x.x.x.x netmask=x.x.x.x gateway=x.x.x.x dns=x.x.x.x"
+
+nodes:
+    server01:
+        mac: 12:34:56:78:9a:bc
+        image: "centos_7.6"
+    server02:
+        mac: bc-9a-78-56-34-12
+        image: "redhat_7"
+        serial: SX123456789
+    server03:
+        mac: cafebabebabe
+        image: "default"
+        serial: SX123456789
+    servergroup:
+        image: "redhat_7"
+        group: "ldapservers"
+
