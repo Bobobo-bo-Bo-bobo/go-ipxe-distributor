@@ -2,4 +2,4 @@
 tmp/
 src/gopkg.in/
 bin/
-
+pkg/
