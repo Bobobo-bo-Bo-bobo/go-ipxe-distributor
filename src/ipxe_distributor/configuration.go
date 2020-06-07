@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
-	// "strconv"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func readConfigurationFile(f string) ([]byte, error) {
@@ -15,51 +17,156 @@ func readConfigurationFile(f string) ([]byte, error) {
 func parseYAML(y []byte) (*Configuration, error) {
 	var cfg Configuration
 
-	// raw_map := make(map[interface{}]interface{})
-	raw_map := make(map[string]interface{})
-	err := yaml.Unmarshal(y, &raw_map)
+	// set defaults and initialise data structures
+	cfg.Global.URL = defaultURL
+	cfg.Default.IPXEPrepend = make([]string, 0)
+	cfg.Default.IPXEAppend = make([]string, 0)
+	cfg.Default.DefaultImage = make([]string, 0)
+	cfg.Images = make(map[string]ConfigImages)
+	cfg.Nodes = make(map[string]ConfigNodes)
+
+	// parse YAML with dynamic keys
+	rawMap := make(map[string]interface{})
+	err := yaml.Unmarshal(y, &rawMap)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println("%+v\n", raw_map)
+	for key, sub := range rawMap {
+		switch key {
+		case "default":
+			for dkey, dvalue := range sub.(map[interface{}]interface{}) {
+				if getInterfaceType(dvalue) != TypeOther {
+					return nil, fmt.Errorf("Invalid type for value of default")
+				}
+				if getInterfaceType(dkey) != TypeString {
+					return nil, fmt.Errorf("Invalid key type for default")
+				}
 
-	// Initialise configuration
-	cfg.Global.Host = DEFAULT_HOST
-	cfg.Global.Port = DEFAULT_PORT
+				switch dkey {
+				case "default_image":
+					if getInterfaceType(dvalue) != TypeOther {
+						return nil, fmt.Errorf("Invalid type for default_image")
+					}
 
-	cfg.Default.IPXEPrepend = make([]string, 0)
-	cfg.Default.IPXEAppend = make([]string, 0)
-	cfg.Default.DefaultImage = make([]string, 0)
-
-	cfg.Images = make(map[string]ConfigImages)
-	cfg.Nodes = make(map[string]ConfigNodes)
-
-	// parse raw map into configuration ... which is kind of ugly
-	for key := range raw_map {
-		if key == "global" {
-			_global := raw_map[key.(string)].(map[string]string)
-			for g_key := range _global {
-				if g_key == "host" {
-				} else if g_key == "port" {
-					/*                    switch _global[g_key].(type) {
-					                      case string:
-					                          cfg.Global.Port = _global[g_key].(string)
-					                          if err != nil {
-					                              return nil, err
-					                          }
-					                      case int:
-					                          cfg.Global.Port = strconv.Itoa(_global[g_key].(int))
-					                      }*/
-				} else {
-					log.Printf("Warning: Skipping unsupported key for global dictionary: %s\n", g_key)
+					for _, k := range dvalue.([]interface{}) {
+						if getInterfaceType(k) != TypeString {
+							return nil, fmt.Errorf("Invalid type for default_image")
+						}
+						cfg.Default.DefaultImage = append(cfg.Default.DefaultImage, k.(string))
+					}
+				case "ipxe_append":
+					if getInterfaceType(dvalue) != TypeOther {
+						return nil, fmt.Errorf("Invalid type for ipxe_append")
+					}
+					for _, k := range dvalue.([]interface{}) {
+						if getInterfaceType(k) != TypeString {
+							return nil, fmt.Errorf("Invalid type for ipxe_append")
+						}
+						cfg.Default.IPXEAppend = append(cfg.Default.IPXEAppend, k.(string))
+					}
+				case "ipxe_prepend":
+					if getInterfaceType(dvalue) != TypeOther {
+						return nil, fmt.Errorf("Invalid type for ipxe_prepend")
+					}
+					for _, k := range dvalue.([]interface{}) {
+						if getInterfaceType(k) != TypeString {
+							return nil, fmt.Errorf("Invalid type for ipxe_prepend")
+						}
+						cfg.Default.IPXEPrepend = append(cfg.Default.IPXEPrepend, k.(string))
+					}
+				default:
+					log.WithFields(log.Fields{
+						"key": dkey.(string),
+					}).Warning("Ignoring unsuppored configuration key for default")
 				}
 			}
-		} else if key == "default" {
-		} else if key == "images" {
-		} else if key == "nodes" {
-		} else {
-			log.Printf("Warning: Skipping unsupported key: %s\n", key)
+
+		case "global":
+			for gkey, gvalue := range sub.(map[interface{}]interface{}) {
+				if getInterfaceType(gvalue) != TypeString {
+					return nil, fmt.Errorf("Invalid type for global")
+				}
+
+				switch gkey {
+				case "url":
+					cfg.Global.URL = gvalue.(string)
+				default:
+					log.WithFields(log.Fields{
+						"key": gkey.(string),
+					}).Warning("Ignoring unsuppored configuration key for global")
+				}
+			}
+		case "images":
+			for imgname, ivalue := range sub.(map[interface{}]interface{}) {
+				if getInterfaceType(imgname) != TypeString {
+					return nil, fmt.Errorf("Key for image name is not a string")
+				}
+
+				for a, aval := range ivalue.(map[interface{}]interface{}) {
+					if getInterfaceType(a) != TypeString {
+						return nil, fmt.Errorf("Invalid type for images value")
+					}
+					switch a {
+					case "action":
+						if getInterfaceType(aval) != TypeOther {
+							return nil, fmt.Errorf("Invalid type for action of image %s", imgname)
+						}
+						var imgact []string
+						for _, k := range aval.([]interface{}) {
+							if getInterfaceType(k) != TypeString {
+								return nil, fmt.Errorf("Invalid type for action value of image %s", imgname)
+							}
+							imgact = append(imgact, k.(string))
+						}
+						cfg.Images[imgname.(string)] = ConfigImages{
+							Action: imgact,
+						}
+
+					default:
+						log.WithFields(log.Fields{
+							"key": a.(string),
+						}).Warning("Ignoring unsuppored configuration key for images")
+					}
+				}
+			}
+		case "nodes":
+			for nodename, nvalue := range sub.(map[interface{}]interface{}) {
+				if getInterfaceType(nodename) != TypeString {
+					return nil, fmt.Errorf("Key for nodes is not a string")
+				}
+				if getInterfaceType(nvalue) != TypeOther {
+					return nil, fmt.Errorf("Invalid type of value for node %s", nodename)
+				}
+
+				var ncfg ConfigNodes
+
+				for key, value := range nvalue.(map[interface{}]interface{}) {
+					if getInterfaceType(key) != TypeString {
+						return nil, fmt.Errorf("Invalid key type for node %s", nodename)
+					}
+					if getInterfaceType(value) != TypeString {
+						return nil, fmt.Errorf("Invalid value type for node %s", nodename)
+					}
+
+					switch key.(string) {
+					case "image":
+						ncfg.Image = value.(string)
+					case "serial":
+						ncfg.Serial = value.(string)
+					case "group":
+						ncfg.Group = value.(string)
+					case "mac":
+						ncfg.MAC = strings.ToLower(value.(string))
+					default:
+						log.WithFields(log.Fields{
+							"key":  key.(string),
+							"node": nodename.(string),
+						}).Warning("Ignoring unsuppored configuration key for node")
+					}
+				}
+				cfg.Nodes[nodename.(string)] = ncfg
+			}
 		}
 	}
 	return &cfg, nil

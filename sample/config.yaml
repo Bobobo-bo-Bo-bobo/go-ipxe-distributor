@@ -1,7 +1,6 @@
 ---
 global:
-    host: "127.0.0.1"
-    port: 1080
+    url: "http://127.0.0.1:8080"
 
 default:
     # prepend to _all_ IPXE data

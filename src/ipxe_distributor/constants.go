@@ -1,5 +1,23 @@
 package main
 
-const DEFAULT_CONFIG_FILE string = "/etc/ipxe-distributor/config.yaml"
-const DEFAULT_HOST string = "localhost"
-const DEFAULT_PORT string = "8080"
+const name = "go-ipxe-distributor"
+const version = "1.0.0-20200607"
+
+const defaultConfigFile = "/etc/ipxe-distributor/config.yaml"
+const defaultURL = "http://localhost:8080"
+const (
+	// TypeNil - interface{} is nil
+	TypeNil int = iota
+	// TypeBool - interface{} is bool
+	TypeBool
+	// TypeString - interface{} is string
+	TypeString
+	// TypeInt - interface{} is int
+	TypeInt
+	// TypeByte - interface{} is byte
+	TypeByte
+	// TypeFloat - interface{} is float
+	TypeFloat
+	// TypeOther - anything else
+	TypeOther
+)

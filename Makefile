@@ -3,7 +3,11 @@ BINDIR	= $(CURDIR)/bin
 
 PROGRAMS = ipxe_distributor
 
-build:
+depend:
+	env GOPATH=$(GOPATH) go get -u gopkg.in/yaml.v2
+	env GOPATH=$(GOPATH) go get -u github.com/sirupsen/logrus
+
+build: depend
 	env GOPATH=$(GOPATH) go install $(PROGRAMS)
 
 destdirs:
@@ -19,6 +23,11 @@ install-bin:
 
 clean:
 	/bin/rm -f bin/ipxe_distributor
+
+distclean: clean
+	/bin/rm -rf src/gopkg.in/
+	/bin/rm -rf src/github.com/
+	/bin/rm -rf src/golang.org/
 
 uninstall:
 	/bin/rm -f $(DESTDIR)/usr/bin
