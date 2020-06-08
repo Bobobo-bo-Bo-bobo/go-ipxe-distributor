@@ -24,6 +24,9 @@ func parseYAML(y []byte) (*Configuration, error) {
 	cfg.Default.DefaultImage = make([]string, 0)
 	cfg.Images = make(map[string]ConfigImages)
 	cfg.Nodes = make(map[string]ConfigNodes)
+	cfg.MACNodeMap = make(map[string]string)
+	cfg.SerialNodeMap = make(map[string]string)
+	cfg.GroupNodeMap = make(map[string][]string)
 
 	// parse YAML with dynamic keys
 	rawMap := make(map[string]interface{})
@@ -157,7 +160,7 @@ func parseYAML(y []byte) (*Configuration, error) {
 					case "group":
 						ncfg.Group = value.(string)
 					case "mac":
-						ncfg.MAC = strings.ToLower(value.(string))
+						ncfg.MAC = value.(string)
 					default:
 						log.WithFields(log.Fields{
 							"key":  key.(string),
@@ -169,5 +172,24 @@ func parseYAML(y []byte) (*Configuration, error) {
 			}
 		}
 	}
+
+	for name, ncfg := range cfg.Nodes {
+		// Map MACs to node name
+		if ncfg.MAC != "" {
+			_normalized := strings.Replace(strings.Replace(strings.ToLower(ncfg.MAC), ":", "", -1), "-", "", -1)
+			cfg.MACNodeMap[_normalized] = name
+		}
+
+		// Map serial numbers to node name
+		if ncfg.Serial != "" {
+			cfg.SerialNodeMap[ncfg.Serial] = name
+		}
+
+		// Map group name to node name
+		if ncfg.Group != "" {
+			cfg.GroupNodeMap[ncfg.Group] = append(cfg.GroupNodeMap[ncfg.Group], name)
+		}
+	}
+
 	return &cfg, nil
 }

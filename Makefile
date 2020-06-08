@@ -6,6 +6,7 @@ PROGRAMS = ipxe_distributor
 depend:
 	env GOPATH=$(GOPATH) go get -u gopkg.in/yaml.v2
 	env GOPATH=$(GOPATH) go get -u github.com/sirupsen/logrus
+	env GOPATH=$(GOPATH) go get -u github.com/gorilla/mux
 
 build: depend
 	env GOPATH=$(GOPATH) go install $(PROGRAMS)

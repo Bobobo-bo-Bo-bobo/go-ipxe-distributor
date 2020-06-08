@@ -1,7 +1,7 @@
 package main
 
 const name = "go-ipxe-distributor"
-const version = "1.0.0-20200607"
+const version = "1.0.0-20200608"
 
 const defaultConfigFile = "/etc/ipxe-distributor/config.yaml"
 const defaultURL = "http://localhost:8080"
