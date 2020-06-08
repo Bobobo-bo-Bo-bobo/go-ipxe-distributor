@@ -21,3 +21,8 @@ const (
 	// TypeOther - anything else
 	TypeOther
 )
+
+const macPath = "/mac"
+const serialPath = "/serial"
+const groupPath = "/group"
+const defaultPath = "/default"

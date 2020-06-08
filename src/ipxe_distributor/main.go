@@ -30,7 +30,7 @@ func main() {
 		}).Fatal("Can't read configuration file")
 	}
 
-	rawParsed, err := parseYAML(raw)
+	config, err := parseYAML(raw)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"config_file": configfile,
@@ -38,5 +38,6 @@ func main() {
 		}).Fatal("Can't parse provided configuration file")
 	}
 
-	log.Printf("%+v\n", rawParsed)
+	// log.Printf("%+v\n", rawParsed)
+	handleHTTP(config)
 }
