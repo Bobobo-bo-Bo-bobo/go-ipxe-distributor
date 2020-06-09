@@ -41,7 +41,7 @@ nodes:
     server02:
         mac: bc-9a-78-56-34-12
         image: "redhat_7"
-        serial: SX123456789
+        serial: SN12BC56789
     server03:
         mac: cafebabebabe
         image: "default"
