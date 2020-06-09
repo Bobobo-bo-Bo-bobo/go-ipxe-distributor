@@ -1,6 +1,6 @@
 ---
 global:
-    url: "http://127.0.0.1:8080"
+    url: "http://127.0.0.1:8080/own/path"
 
 default:
     # prepend to _all_ IPXE data
