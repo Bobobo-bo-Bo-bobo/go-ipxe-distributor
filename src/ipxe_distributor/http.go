@@ -106,6 +106,42 @@ func defaultHandler(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, strings.Join(config.Default.IPXEAppend, "\n"))
 }
 
+func getiPXEFromLabel(l string) (string, error) {
+	var ipxe string
+
+	// Get image label for node
+	node, found := config.Nodes[l]
+	if !found {
+		return "", fmt.Errorf("No node data found for label")
+	}
+
+	if node.Image == "" {
+		return "", fmt.Errorf("Node for label contains no image name")
+	}
+
+	// Get image data for image label
+	image, found := config.Images[node.Image]
+	if !found {
+		// special case: "default" will load the default iPXE data
+		if node.Image != "default" {
+			return "", fmt.Errorf("No image data found for image name")
+		}
+	}
+
+	ipxe += fmt.Sprintf("#!ipxe\n")
+	ipxe += fmt.Sprintf(strings.Join(config.Default.IPXEPrepend, "\n"))
+
+	if node.Image == "default" {
+		ipxe += fmt.Sprintf(strings.Join(config.Default.DefaultImage, "\n"))
+	} else {
+		ipxe += fmt.Sprintf(strings.Join(image.Action, "\n"))
+	}
+
+	ipxe += fmt.Sprintf(strings.Join(config.Default.IPXEAppend, "\n"))
+
+	return ipxe, nil
+}
+
 func groupHandler(writer http.ResponseWriter, request *http.Request) {
 	logRequest(request)
 
@@ -127,52 +163,21 @@ func groupHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Get image label for node
-	node, found := config.Nodes[nlabel]
-	if !found {
+	data, err := getiPXEFromLabel(nlabel)
+	if err != nil {
 		writer.WriteHeader(http.StatusNotFound)
 
 		log.WithFields(log.Fields{
 			"group": rgrp,
 			"label": nlabel,
-		}).Error("Group maps to node label but no configuration found for this label")
+		}).Error(err.Error())
 
-		fmt.Fprintf(writer, "Group %s maps to node label %s but no configuration found for this label", rgrp, nlabel)
-		return
-	}
-
-	if node.Image == "" {
-		writer.WriteHeader(http.StatusNotFound)
-
-		log.WithFields(log.Fields{
-			"group": rgrp,
-			"label": nlabel,
-		}).Error("Group maps to node label but no configuration found for this label")
-
-		fmt.Fprintf(writer, "Group %s maps to node label %s, but node label contains no image name", rgrp, nlabel)
-		return
-	}
-
-	// Get image data for image label
-	image, found := config.Images[node.Image]
-	if !found {
-		writer.WriteHeader(http.StatusNotFound)
-
-		log.WithFields(log.Fields{
-			"group": rgrp,
-			"label": nlabel,
-		}).Error("Group maps to node label which references image label, but no such image label exist")
-
-		fmt.Fprintf(writer, "Group %s maps to node label %s which references image label %s, but no such image label exist", rgrp, nlabel, node.Image)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
 
-	fmt.Fprintf(writer, "#!ipxe\n")
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEPrepend, "\n"))
-	fmt.Fprintf(writer, strings.Join(image.Action, "\n"))
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEAppend, "\n"))
+	fmt.Fprintf(writer, data)
 }
 
 func macHandler(writer http.ResponseWriter, request *http.Request) {
@@ -200,56 +205,22 @@ func macHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Get image label for node
-	node, found := config.Nodes[nlabel]
-	if !found {
+	data, err := getiPXEFromLabel(nlabel)
+	if err != nil {
 		writer.WriteHeader(http.StatusNotFound)
 
 		log.WithFields(log.Fields{
 			"mac":            _rmac,
-			"normalised_mac": rmac,
+			"normalised mac": rmac,
 			"label":          nlabel,
-		}).Error("MAC maps to node label but no configuration found for this label")
+		}).Error(err.Error())
 
-		fmt.Fprintf(writer, "MAC %s maps to node label %s but no configuration found for this label", _rmac, nlabel)
-		return
-	}
-
-	if node.Image == "" {
-		writer.WriteHeader(http.StatusNotFound)
-
-		log.WithFields(log.Fields{
-			"mac":            _rmac,
-			"normalised_mac": rmac,
-			"label":          nlabel,
-		}).Error("MAC maps to node label but no configuration found for this label")
-
-		fmt.Fprintf(writer, "MAC %s maps to node label %s, but node label contains no image name", _rmac, nlabel)
-		return
-	}
-
-	// Get image data for image label
-	image, found := config.Images[node.Image]
-	if !found {
-		writer.WriteHeader(http.StatusNotFound)
-
-		log.WithFields(log.Fields{
-			"mac":            _rmac,
-			"normalised_mac": rmac,
-			"label":          nlabel,
-			"image":          node.Image,
-		}).Error("MAC maps to node label which references image label, but no such image label exist")
-
-		fmt.Fprintf(writer, "MAC %s maps to node label %s which references image label %s, but no such image label exist", _rmac, nlabel, node.Image)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
 
-	fmt.Fprintf(writer, "#!ipxe\n")
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEPrepend, "\n"))
-	fmt.Fprintf(writer, strings.Join(image.Action, "\n"))
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEAppend, "\n"))
+	fmt.Fprintf(writer, data)
 }
 
 func serialHandler(writer http.ResponseWriter, request *http.Request) {
@@ -273,50 +244,19 @@ func serialHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Get image label for node
-	node, found := config.Nodes[nlabel]
-	if !found {
+	data, err := getiPXEFromLabel(nlabel)
+	if err != nil {
 		writer.WriteHeader(http.StatusNotFound)
 
 		log.WithFields(log.Fields{
-			"serial": rsrl,
-			"label":  nlabel,
-		}).Error("Serial number maps to node label but no configuration found for this label")
+			"serial_number": rsrl,
+			"label":         nlabel,
+		}).Error(err.Error())
 
-		fmt.Fprintf(writer, "Serial number %s maps to node label %s but no configuration found for this label", rsrl, nlabel)
-		return
-	}
-
-	if node.Image == "" {
-		writer.WriteHeader(http.StatusNotFound)
-
-		log.WithFields(log.Fields{
-			"serial": rsrl,
-			"label":  nlabel,
-		}).Error("Serial number maps to node label but no configuration found for this label")
-
-		fmt.Fprintf(writer, "Serial number %s maps to node label %s, but node label contains no image name", rsrl, nlabel)
-		return
-	}
-
-	// Get image data for image label
-	image, found := config.Images[node.Image]
-	if !found {
-		writer.WriteHeader(http.StatusNotFound)
-
-		log.WithFields(log.Fields{
-			"serial": rsrl,
-			"label":  nlabel,
-		}).Error("Serial number maps to node label which references image label, but no such image label exist")
-
-		fmt.Fprintf(writer, "Serial number %s maps to node label %s which references image label %s, but no such image label exist", rsrl, nlabel, node.Image)
 		return
 	}
 
 	writer.WriteHeader(http.StatusOK)
 
-	fmt.Fprintf(writer, "#!ipxe\n")
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEPrepend, "\n"))
-	fmt.Fprintf(writer, strings.Join(image.Action, "\n"))
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEAppend, "\n"))
+	fmt.Fprintf(writer, data)
 }
