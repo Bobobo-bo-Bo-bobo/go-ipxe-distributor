@@ -1,7 +1,7 @@
 package main
 
 const name = "go-ipxe-distributor"
-const version = "1.0.0-20200608"
+const version = "1.0.0-20200609"
 
 const defaultConfigFile = "/etc/ipxe-distributor/config.yaml"
 const defaultURL = "http://localhost:8080"
@@ -22,7 +22,7 @@ const (
 	TypeOther
 )
 
-const macPath = "/mac"
-const serialPath = "/serial"
-const groupPath = "/group"
+const macPath = "/mac/{mac}"
+const serialPath = "/serial/{serial}"
+const groupPath = "/group/{group}"
 const defaultPath = "/default"

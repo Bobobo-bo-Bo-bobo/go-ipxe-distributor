@@ -7,6 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var config Configuration
+
 func main() {
 	var configfile = defaultConfigFile
 
@@ -30,7 +32,7 @@ func main() {
 		}).Fatal("Can't read configuration file")
 	}
 
-	config, err := parseYAML(raw)
+	config, err = parseYAML(raw)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"config_file": configfile,

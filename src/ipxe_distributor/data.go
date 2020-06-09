@@ -31,7 +31,7 @@ type Configuration struct {
 	Default       ConfigDefault
 	Images        map[string]ConfigImages
 	Nodes         map[string]ConfigNodes
-	MACNodeMap    map[string]string   // Map normalized MAC addresses to node names
-	SerialNodeMap map[string]string   // Map serial numbers to node names
-	GroupNodeMap  map[string][]string // Map group names to node names
+	MACNodeMap    map[string]string // Map normalized MAC addresses to node names
+	SerialNodeMap map[string]string // Map serial numbers to node names
+	GroupNodeMap  map[string]string // Map group names to node names
 }
