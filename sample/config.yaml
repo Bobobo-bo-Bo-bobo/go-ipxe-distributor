@@ -1,8 +1,6 @@
 ---
 global:
     url: "http://127.0.0.1:8080/own/path"
-
-default:
     # prepend to _all_ IPXE data
     ipxe_prepend:
         - |
@@ -18,6 +16,7 @@ default:
         - "choose --timeout ${menu-timeout} --default ${menu-default} selected || goto abort"
         - "set menu-timeout 0"
 
+default:
     # default if there is no match
     default_image:
         - "# Boot the first local HDD"
