@@ -1,7 +1,7 @@
 package main
 
 const name = "go-ipxe-distributor"
-const version = "1.0.0-20200609"
+const version = "1.0.0"
 
 const defaultConfigFile = "/etc/ipxe-distributor/config.yaml"
 const defaultURL = "http://localhost:8080"
@@ -26,3 +26,26 @@ const macPath = "/mac/{mac}"
 const serialPath = "/serial/{serial}"
 const groupPath = "/group/{group}"
 const defaultPath = "/default"
+
+const versionText = `%s version %s
+Copyright (C) 2020 by Andreas Maus <maus@ypbind.de>
+This program comes with ABSOLUTELY NO WARRANTY.
+
+%s is distributed under the Terms of the GNU General
+Public License Version 3. (http://www.gnu.org/copyleft/gpl.html)
+
+Build with go version: %s
+
+`
+
+const helpText = `Usage: %s [--config=<file>] [--help] [--test] [--version]
+    --config=<file>     Read configuration from <file>
+                        Default: %s
+
+    --help              Show help text
+
+    --test              Test configuration file for syntax errors
+
+    --version           Show version information
+
+`
