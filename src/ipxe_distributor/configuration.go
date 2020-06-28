@@ -19,8 +19,8 @@ func parseYAML(y []byte) (Configuration, error) {
 
 	// set defaults and initialise data structures
 	cfg.Global.URL = defaultURL
-	cfg.Default.IPXEPrepend = make([]string, 0)
-	cfg.Default.IPXEAppend = make([]string, 0)
+	cfg.Global.IPXEPrepend = make([]string, 0)
+	cfg.Global.IPXEAppend = make([]string, 0)
 	cfg.Default.DefaultImage = make([]string, 0)
 	cfg.Images = make(map[string]ConfigImages)
 	cfg.Nodes = make(map[string]ConfigNodes)
@@ -58,26 +58,6 @@ func parseYAML(y []byte) (Configuration, error) {
 						}
 						cfg.Default.DefaultImage = append(cfg.Default.DefaultImage, k.(string))
 					}
-				case "ipxe_append":
-					if getInterfaceType(dvalue) != TypeOther {
-						return cfg, fmt.Errorf("Invalid type for ipxe_append")
-					}
-					for _, k := range dvalue.([]interface{}) {
-						if getInterfaceType(k) != TypeString {
-							return cfg, fmt.Errorf("Invalid type for ipxe_append")
-						}
-						cfg.Default.IPXEAppend = append(cfg.Default.IPXEAppend, k.(string))
-					}
-				case "ipxe_prepend":
-					if getInterfaceType(dvalue) != TypeOther {
-						return cfg, fmt.Errorf("Invalid type for ipxe_prepend")
-					}
-					for _, k := range dvalue.([]interface{}) {
-						if getInterfaceType(k) != TypeString {
-							return cfg, fmt.Errorf("Invalid type for ipxe_prepend")
-						}
-						cfg.Default.IPXEPrepend = append(cfg.Default.IPXEPrepend, k.(string))
-					}
 				default:
 					log.WithFields(log.Fields{
 						"key": dkey.(string),
@@ -94,6 +74,26 @@ func parseYAML(y []byte) (Configuration, error) {
 				switch gkey {
 				case "url":
 					cfg.Global.URL = gvalue.(string)
+				case "ipxe_append":
+					if getInterfaceType(gvalue) != TypeOther {
+						return cfg, fmt.Errorf("Invalid type for ipxe_append")
+					}
+					for _, k := range gvalue.([]interface{}) {
+						if getInterfaceType(k) != TypeString {
+							return cfg, fmt.Errorf("Invalid type for ipxe_append")
+						}
+						cfg.Global.IPXEAppend = append(cfg.Global.IPXEAppend, k.(string))
+					}
+				case "ipxe_prepend":
+					if getInterfaceType(gvalue) != TypeOther {
+						return cfg, fmt.Errorf("Invalid type for ipxe_prepend")
+					}
+					for _, k := range gvalue.([]interface{}) {
+						if getInterfaceType(k) != TypeString {
+							return cfg, fmt.Errorf("Invalid type for ipxe_prepend")
+						}
+						cfg.Global.IPXEPrepend = append(cfg.Global.IPXEPrepend, k.(string))
+					}
 				default:
 					log.WithFields(log.Fields{
 						"key": gkey.(string),

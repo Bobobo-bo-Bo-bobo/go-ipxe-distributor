@@ -101,9 +101,9 @@ func defaultHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 
 	fmt.Fprintf(writer, "#!ipxe\n")
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEPrepend, "\n"))
+	fmt.Fprintf(writer, strings.Join(config.Global.IPXEPrepend, "\n"))
 	fmt.Fprintf(writer, strings.Join(config.Default.DefaultImage, "\n"))
-	fmt.Fprintf(writer, strings.Join(config.Default.IPXEAppend, "\n"))
+	fmt.Fprintf(writer, strings.Join(config.Global.IPXEAppend, "\n"))
 }
 
 func getiPXEFromLabel(l string) (string, error) {
@@ -129,7 +129,7 @@ func getiPXEFromLabel(l string) (string, error) {
 	}
 
 	ipxe += fmt.Sprintf("#!ipxe\n")
-	ipxe += fmt.Sprintf(strings.Join(config.Default.IPXEPrepend, "\n"))
+	ipxe += fmt.Sprintf(strings.Join(config.Global.IPXEPrepend, "\n"))
 
 	if node.Image == "default" {
 		ipxe += fmt.Sprintf(strings.Join(config.Default.DefaultImage, "\n"))
@@ -137,7 +137,7 @@ func getiPXEFromLabel(l string) (string, error) {
 		ipxe += fmt.Sprintf(strings.Join(image.Action, "\n"))
 	}
 
-	ipxe += fmt.Sprintf(strings.Join(config.Default.IPXEAppend, "\n"))
+	ipxe += fmt.Sprintf(strings.Join(config.Global.IPXEAppend, "\n"))
 
 	return ipxe, nil
 }

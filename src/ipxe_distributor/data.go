@@ -2,13 +2,13 @@ package main
 
 // ConfigGlobal - global configuration
 type ConfigGlobal struct {
-	URL string
+	URL         string
+	IPXEPrepend []string
+	IPXEAppend  []string
 }
 
 // ConfigDefault - iPXE defaults
 type ConfigDefault struct {
-	IPXEPrepend  []string
-	IPXEAppend   []string
 	DefaultImage []string
 }
 
