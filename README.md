@@ -1,3 +1,7 @@
+**_Note:_** Because I'm running my own servers for several years, main development is done at at https://git.ypbind.de/cgit/go-ipxe-distributor/
+
+----
+
 # Preface
 This service provides a defined method to serve [iPXE](https://ipxe.org/) configuration from a single YAML configuration and is the successor of [ipxe-distributor](https://git.ypbind.de/cgit/ipxe-distributor/). Allowing for better portability, e.g. no dependency for pyYAML (which is not available on some distributions) the predecessor has been rewritten in Go. (And to avoid Python 2 -> 3 migration.)
 
