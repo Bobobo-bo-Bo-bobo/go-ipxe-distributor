@@ -1,0 +1,16 @@
+[Unit]
+Description=A webservice to provide iPXE configuration based on MAC,serial or group name
+After=network.target
+Documentation=https://ypbind.de/maus/projects/go-ipxe-distributor/index.html
+
+[Service]
+EnvironmentFile=-/etc/sysconfig/go-ipxe-distributor
+ExecStartPre=/usr/bin/ipxe_distributor --test $OPTIONS
+ExecStart=/usr/bin/ipxe_distributor $OPTIONS
+Restart=on-failure
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
+
