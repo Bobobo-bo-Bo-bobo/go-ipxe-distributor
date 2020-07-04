@@ -35,9 +35,13 @@ func handleHTTP(cfg Configuration) error {
 
 	router := mux.NewRouter()
 	router.HandleFunc(prefix+defaultPath, defaultHandler)
+	router.HandleFunc(prefix+defaultPath+"/", defaultHandler)
 	router.HandleFunc(prefix+groupPath, groupHandler)
+	router.HandleFunc(prefix+groupPath+"/", groupHandler)
 	router.HandleFunc(prefix+macPath, macHandler)
+	router.HandleFunc(prefix+macPath+"/", macHandler)
 	router.HandleFunc(prefix+serialPath, serialHandler)
+	router.HandleFunc(prefix+serialPath+"/", serialHandler)
 
 	server := &http.Server{
 		Handler:      router,
